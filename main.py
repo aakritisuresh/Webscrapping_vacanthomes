@@ -15,11 +15,17 @@ import requests
 import time
 
 def scrape_page(d):
-    tbody = d.find_element('xpath', '//*[@id="ctl00_ContentPlaceHolder1_DataGrid1"]')
     data = []
-    for tr in tbody.find_elements(By.XPATH, '//tr'):
-        row = [item.text for item in tr.find_elements(By.XPATH, './/td')]
-        data.append(row)
+    # Wrap this method in try/except because when d.find_element fails, it throws an error
+    # In this case, some locations like "BELLONA-GITTINGS" returns "No results found" instead of the usual table
+    try:
+        tbody = d.find_element('xpath', '//*[@id="ctl00_ContentPlaceHolder1_DataGrid1"]')
+        data = []
+        for tr in tbody.find_elements(By.XPATH, '//tr'):
+            row = [item.text for item in tr.find_elements(By.XPATH, './/td')]
+            data.append(row)
+    except:
+        print('  No results found')
     return data
 
 # extract table contents
@@ -55,7 +61,8 @@ def main():
         if neighborhood.get_attribute('value') == ' ':
             # Skip default empty value
             continue
-        # select Neighbourhood(by Value)
+        # Print each neighbourhood as you process it so if there is an error, we know which one to test
+        print(neighborhood.get_attribute('value'))
         select_element.select_by_value(neighborhood.get_attribute('value'))
 
         # select Search Button
@@ -65,7 +72,7 @@ def main():
         # Go back to previous page with select options
         driver.back()
 
-        print(return_data)
+#         print(return_data)
 
 if __name__ == '__main__':  
     main()
