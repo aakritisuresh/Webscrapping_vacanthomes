@@ -72,7 +72,7 @@ def main():
         # Go back to previous page with select options
         driver.back()
 
-#         print(return_data)
+    print(return_data)
 
 if __name__ == '__main__':  
     main()
