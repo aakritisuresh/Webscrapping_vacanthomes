@@ -58,7 +58,7 @@ def main():
     tbody = driver.find_element('xpath', '//*[@id="ctl00_ContentPlaceHolder1_DataGrid1"]')
     data = []
     for tr in row = tbody.find_elements(By.XPATH, '//tr'):
-        row = [item.text for item in tr.find_elements(By.XPATH, './/tr')]
+        row = [item.text for item in tr.find_elements(By.XPATH, './/td')]
         data.append(row)
     print(data)
 
