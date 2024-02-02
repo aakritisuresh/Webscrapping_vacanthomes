@@ -14,13 +14,24 @@ import pandas as pd
 import requests
 import time
 
+def scrape_page(d):
+    tbody = d.find_element('xpath', '//*[@id="ctl00_ContentPlaceHolder1_DataGrid1"]')
+    data = []
+    for tr in tbody.find_elements(By.XPATH, '//tr'):
+        row = [item.text for item in tr.find_elements(By.XPATH, './/td')]
+        data.append(row)
+    return data
+
 # extract table contents
 def main():
     # debug auto-quit
     options = webdriver.ChromeOptions()
-    options.add_experimental_option("detach", True)
+    # detach=True ensures that the chrome window stays open after this script completes processing
+    # Helpful for debugging
+    options.add_experimental_option("detach", False)
 
-    service = Service(executable_path="/Users/aakritisuresh/anaconda3/main.python.selenium/chromedriver-mac-x64/chromedriver")
+    service = Service(executable_path="/opt/homebrew/bin/chromedriver")
+    # service = Service(executable_path="/Users/aakritisuresh/anaconda3/main.python.selenium/chromedriver-mac-x64/chromedriver")
     driver = webdriver.Chrome(options=options, service=service)
 
     # open url
@@ -37,25 +48,24 @@ def main():
     all_neighbourhoods = select_element.options
     print(len(all_neighbourhoods))
 
-    # select Neighborhood(by value
-    #ABELL = select_element.select_by_value("ABELL")
+    return_data = []
 
-    # select Neighbourhood(by Index)
-    select_element.select_by_index(1)
+    # Iterate over each neighborhood in select options
+    for neighborhood in all_neighbourhoods:
+        if neighborhood.get_attribute('value') == ' ':
+            # Skip default empty value
+            continue
+        # select Neighbourhood(by Value)
+        select_element.select_by_value(neighborhood.get_attribute('value'))
 
-    # extract all neighbourhood names
-    #for neighborhood in all_neighbourhoods:
-    #    print(neighborhood.text)
+        # select Search Button
+        search_button = driver.find_element('id','ctl00_ContentPlaceHolder1_btNB')
+        search_button.click()
+        return_data.append(scrape_page(driver))
+        # Go back to previous page with select options
+        driver.back()
 
-    # select Search Button
-    search_button = driver.find_element('id','ctl00_ContentPlaceHolder1_btNB')
-    search_button.click()
-    tbody = driver.find_element('xpath', '//*[@id="ctl00_ContentPlaceHolder1_DataGrid1"]')
-    data = []
-    for tr in tbody.find_elements(By.XPATH, '//tr'):
-        row = [item.text for item in tr.find_elements(By.XPATH, './/td')]
-        data.append(row)
-    print(data)
+        print(return_data)
 
 if __name__ == '__main__':  
     main()
