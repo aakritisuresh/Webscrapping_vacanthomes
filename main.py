@@ -55,6 +55,7 @@ def main():
     print(len(all_neighbourhoods))
 
     return_data = []
+    i = 1
 
     # Iterate over each neighborhood in select options
     for neighborhood in all_neighbourhoods:
@@ -62,7 +63,8 @@ def main():
             # Skip default empty value
             continue
         # Print each neighbourhood as you process it so if there is an error, we know which one to test
-        print(neighborhood.get_attribute('value'))
+        print(i,' - ',neighborhood.get_attribute('value'))
+        i+=1
         select_element.select_by_value(neighborhood.get_attribute('value'))
 
         # select Search Button
