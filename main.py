@@ -13,20 +13,31 @@ from selenium.webdriver.support.select import Select
 import pandas as pd
 import requests
 import time
+import csv
+import os
+
+def write_to_file(row):
+    with open('file.csv', 'a', newline='') as file:
+       writer = csv.writer(file)
+       writer.writerow(row)
+
+def reset_file():
+    # If such a file exists, delete it so we can recreate it.
+    if os.path.exists('file.csv'):
+        os.remove('file.csv')
+    # Add header row to CSV file
+    write_to_file(['Address', 'Date Condemned', 'Primary or Accessory*'])
 
 def scrape_page(d):
-    data = []
     # Wrap this method in try/except because when d.find_element fails, it throws an error
     # In this case, some locations like "BELLONA-GITTINGS" returns "No results found" instead of the usual table
     try:
-        tbody = d.find_element('xpath', '//*[@id="ctl00_ContentPlaceHolder1_DataGrid1"]')
-        data = []
-        for tr in tbody.find_elements(By.XPATH, '//tr'):
-            row = [item.text for item in tr.find_elements(By.XPATH, './/td')]
-            data.append(row)
+        tbody = d.find_element(By.ID, "ctl00_ContentPlaceHolder1_DataGrid1")
+        for tr in tbody.find_elements(By.CSS_SELECTOR, 'tr:not(.headerrow)'):
+            row = [item.text for item in tr.find_elements(By.TAG_NAME, 'td')]
+            write_to_file(row)
     except:
         print('  No results found')
-    return data
 
 # extract table contents
 def main():
@@ -57,6 +68,8 @@ def main():
     return_data = []
     i = 1
 
+    reset_file()
+
     # Iterate over each neighborhood in select options
     for neighborhood in all_neighbourhoods:
         if neighborhood.get_attribute('value') == ' ':
@@ -70,11 +83,10 @@ def main():
         # select Search Button
         search_button = driver.find_element('id','ctl00_ContentPlaceHolder1_btNB')
         search_button.click()
-        return_data.append(scrape_page(driver))
+        # Add to existing list
+        scrape_page(driver)
         # Go back to previous page with select options
         driver.back()
-
-    print(return_data)
 
 if __name__ == '__main__':  
     main()
